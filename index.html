@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Для самой особенной ✨</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0e0f14; font-family: sans-serif; color: #f0f2f5; }
+        .bg-glow { position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 20%, rgba(255, 0, 127, 0.08) 0%, transparent 45%), radial-gradient(circle at 70% 80%, rgba(0, 210, 255, 0.08) 0%, transparent 45%); z-index: 1; animation: breathe 12s ease-in-out infinite alternate; pointer-events: none; }
+        @keyframes breathe { 0% { transform: scale(1) rotate(0deg); } 100% { transform: scale(1.06) rotate(3deg); } }
+        .app-container { position: relative; width: 100%; height: 100%; z-index: 2; display: flex; justify-content: center; align-items: center; }
+        .screen { position: absolute; width: 100%; height: 100%; max-width: 420px; padding: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transform: scale(0.96); transition: opacity 0.4s ease, transform 0.4s ease; }
+        .screen.active { opacity: 1; pointer-events: auto; transform: scale(1); }
+        .blur-card { background: rgba(18, 20, 28, 0.78); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 32px; padding: 30px 24px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); }
+        .glow-text { font-size: 2.1rem; font-weight: 800; background: linear-gradient(135deg, #fff 0%, #ff007f 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px; }
+        .lvl-counter { font-size: 0.85rem; color: #9d4edd; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+        .compliment { color: #00d2ff; font-size: 1.15rem; margin: 20px 0; line-height: 1.45; font-weight: 500; min-height: 50px; display: flex; justify-content: center; align-items: center; }
+        .instruction { font-size: 0.95rem; color: #a0a5b5; margin-bottom: 15px; min-height: 40px; }
+        .btn { font-size: 1rem; font-weight: 600; padding: 16px 32px; border: none; border-radius: 16px; cursor: pointer; width: 100%; max-width: 260px; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.95); }
+        .btn-primary { background: linear-gradient(135deg, #ff007f, #9d4edd); color: #fff; box-shadow: 0 8px 24px rgba(255, 0, 127, 0.25); }
+        .game-zone { width: 100%; min-height: 200px; display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 15px; background: rgba(0,0,0,0.25); border-radius: 24px; overflow: hidden; }
+        
+        /* Стили динамических механик */
+        .wait-z { width:100%; height:100%; border: 1px dashed rgba(255,255,255,0.1); border-radius:24px; display:flex; justify-content:center; align-items:center; transition: background 0.1s; }
+        .wait-z.ready { background: rgba(57, 255, 14, 0.15); border-color: #39ff14; }
+        .t-dot { position: absolute; width: 35px; height: 35px; background: #00d2ff; border-radius: 50%; box-shadow: 0 0 20px #00d2ff; cursor: pointer; transform: translate(-50%, -50%); }
+        .f-dot { position: absolute; width: 40px; height: 40px; background: #ff007f; border-radius: 50%; box-shadow: 0 0 20px #ff007f; transform: translate(-50%, -50%); animation: fl 0.6s ease forwards; }
+        @keyframes fl { 0%,100% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 40%,60% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+        .t-ring { position: absolute; top:50%; left:50%; width:140px; height:140px; border:3px solid #9d4edd; border-radius:50%; transform:translate(-50%,-50%) scale(1); }
+        .t-center { position: absolute; top:50%; left:50%; width:30px; height:30px; background:rgba(255,255,255,0.1); border:2px solid #fff; border-radius:50%; transform:translate(-50%,-50%); }
+        .choice-row { display: flex; gap: 12px; width: 100%; padding: 0 10px; }
+        .c-card { flex: 1; height: 110px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; color: #a0a5b5; cursor: pointer; transition: all 0.2s; }
+        .c-card.win { border-color: #39ff14; color: #39ff14; background: rgba(57,255,14,0.06); }
+        .c-cube { position: absolute; width: 36px; height: 36px; background: linear-gradient(135deg, #ff007f, #00d2ff); border-radius: 10px; box-shadow: 0 0 20px rgba(255,0,127,0.4); cursor: pointer; transform: translate(-50%,-50%); }
+        
+        /* Сканер */
+        .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: #39ff14; box-shadow: 0 0 15px #39ff14; animation: scAn 2s infinite ease-in-out; display: none; }
+        @keyframes scAn { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
+        .hidden { display: none !important; }
+        @keyframes errL { 0% { left: -40%; } 100% { left: 100%; } }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="app-container">
+        
+        <!-- СТАРТ -->
+        <section class="screen active" id="scr-start">
+            <div class="blur-card">
+                <h1 class="glow-text">Для тебя ✨</h1>
+                <p class="compliment" style="color:#a0a5b5;">Я собрал грандиозное интерактивное путешествие. 40 уникальных испытаний и море искренних слов для тебя одной.</p>
+                <button class="btn btn-primary" id="start-btn">Начать марафон</button>
+            </div>
+        </section>
+
+        <!-- ГЛАВНОЕ ИГРОВОЕ ЯДРО (Один экран, меняющий контент программно) -->
+        <section class="screen" id="scr-game">
+            <div class="blur-card">
+                <div class="lvl-counter" id="g-counter">Уровень 1 из 40</div>
+                <div class="instruction" id="g-instr">Загрузка задания...</div>
+                
+                <div class="game-zone" id="g-zone"></div>
+                
+                <p class="compliment hidden" id="g-comp"></p>
+                <button class="btn btn-primary hidden" id="g-next">Дальше</button>
+            </div>
+        </section>
+
+        <!-- СБОЙ СИСТЕМЫ -->
+        <section class="screen" id="scr-err">
+            <div class="blur-card" style="border:1px solid #ff007f; background:rgba(255,0,127,0.03);">
+                <h2 style="color:#ff007f; font-size:1.3rem; margin-bottom:15px; font-family:monospace;">Внимание! Критическая перегрузка!</h2>
+                <p class="compliment" style="color:#f0f2f5;">Сервер не справляется с твоим великолепием... Перезагрузка чувств... 🥰</p>
+                <div style="width:100%; height:2px; background:#222; position:relative; overflow:hidden; margin-top:20px;">
+                    <div style="position:absolute; left:0; top:0; height:100%; width:40%; background:#ff007f; animation:errL 1.8s infinite linear;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ФИНАЛ -->
+        <section class="screen" id="scr-final">
+            <div class="blur-card">
+                <h2 class="glow-text">Ты сделала это! 👑</h2>
+                <p class="compliment" style="color:#fff; font-size:1.2rem; margin-bottom:40px;">Ты прошла все 40 уровней! У меня остался один, самый важный вопрос: Ты поднимешь мне настроение своей улыбкой сегодня?</p>
+                <div style="position:relative; width:100%; height:60px; margin-top:20px; display:flex; justify-content:center; gap:20px;">
+                    <button class="btn btn-primary" id="f-yes" style="position:absolute; left:calc(50% - 135px); max-width:120px;">Да</button>
+                    <button class="btn" id="f-no" style="position:absolute; right:calc(50% - 135px); max-width:120px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); transition:all 0.15s ease;">Нет</button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        const comps = [
+            "Ты умеешь приковывать к себе всё внимание! ❤️",
+            "Твоя улыбка завораживает с первой секунды 🥰",
+            "Рядом с тобой мир становится ярче и теплее 🌹",
+            "Ты невероятно чуткая и удивительная девушка ✨",
+            "Ты заслуживаешь всего самого прекрасного в этом мире! 💖",
+            "Твой голос звучит как самая любимая мелодия 🎶",
+            "У тебя потрясающий ум и уникальный взгляд на жизнь 🌟",
+            "Твоя энергия способна зарядить любого позитивом ⚡",
+            "Ты — самое настоящее и чистое вдохновение 🌸",
+            "С тобой безумно легко, уютно и невероятно тепло ☕",
+            "Твои глаза излучают какой-то космический свет 🌌",
+            "Ты умеешь превращать самый обычный день в праздник 🎉",
+            "Твоя доброта и искренность покоряют с первого слова 🕊️",
+            "Ты сочетаешь в себе невероятную силу и хрупкую нежность 💎",
+            "В тебе есть та самая редкая загадка, которую хочется разгадывать 🗝️",
+            "Ты вдохновляешь меня становиться лучше каждый день 📈",
+            "Твоему чувству стиля и грации можно только позавидовать 👑",
+            "Ты умеешь находить прекрасное в самых простых вещах 🍃",
+            "Твоё присутствие мгновенно прогоняет любую грусть ☀️",
+            "Ты — человек с невероятно большим и чутким сердцем 🧡"
+        ];
+        const comps2 = [
+            "Твой смех — это лучшее лекарство от любых забот 😂",
+            "Ты обладаешь удивительным магнетизмом и шармом ✨",
+            "Твоя поддержка — это самая надежная опора 🧱",
+            "Ты делаешь этот мир лучше просто тем, что ты в нём есть 🌍",
+            "В тебе столько жизни, тепла и искренней радости 🍯",
+            "Ты — яркая индивидуальность, которую невозможно забыть 🦄",
+            "Твоя забота ощущается даже на расстоянии 🌌",
+            "Ты умеешь слушать и понимать так, как никто другой 🎧",
+            "В твоих мыслях и словах столько мудрости и глубины 📚",
+            "Ты невероятно талантлива во всём, за что берешься 🎨",
+            "Рядом с тобой время летит незаметно и счастливо ⏳",
+            "Твоя честность и открытость — это настоящее сокровище 🪙",
+            "Ты умеешь дарить веру в себя и согревать душу 🔥",
+            "Твоя целеустремленность и смелость по-настоящему восхищают 🎯",
+            "Ты — лучшая версия прекрасного, которую создал этот мир 🌌",
+            "Твой внутренний мир — это прекрасный и бескрайний океан 🌊",
+            "Ты заставляешь сердца биться чаще, просто проходя мимо 💓",
+            "Твоя щедрость на добрые слова и улыбки бесценна 💎",
+            "Ты — самое лучшее, яркое и запоминающееся событие дня ⚡",
+            "Проверено. Ты идеальна как всегда^-^"
+        ];
+        const comps = comps1.concat(comps2);
+
+        const instrs = [
+            "Нажми на зону ниже, когда она позеленеет",
+            "Поймай бегающую по кругу искорку",
+            "Успей поймать 3 вспышки сердца на экране",
+            "Нажми точно в момент, когда круг сузится в центр",
+            "Зажми и удерживай зону, чтобы заполнить шкалу",
+            "Доверься интуиции и найди счастливую карту среди трех",
+            "Поймай хаотично летающий и уворачивающийся куб"
+        ];
+
+        let curLvl = 1;
+        const totalLvls = 40;
+        let actx = null;
+
+        function snd(f, d) {
+            if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+            let o = actx.createOscillator(), g = actx.createGain();
+            o.frequency.setValueAtTime(f, actx.currentTime);
+            g.gain.setValueAtTime(0.1, actx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + d);
+            o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + d);
+        }
+
+        function triggerVibe() { if (navigator.vibrate) navigator.vibrate(15); }
+        function startLvl() {
+            const zone = document.getElementById('g-zone');
+            const instEl = document.getElementById('g-instr');
+            const compEl = document.getElementById('g-comp');
+            const nextBtn = document.getElementById('g-next');
+            const countEl = document.getElementById('g-counter');
+
+            countEl.innerText = `Уровень ${curLvl} из ${totalLvls}`;
+            compEl.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            zone.innerHTML = '';
+            
+            let mech = (curLvl === totalLvls) ? 7 : (curLvl - 1) % 7;
+            instEl.innerText = (mech === 7) ? "Приложи палец для биометрического анализа личности" : instrs[mech];
+
+            if(mech === 0) {
+                let z = document.createElement('div'); z.className = 'wait-z';
+                let b = document.createElement('b'); b.innerText = 'Жди...'; b.style.color = '#a0a5b5';
+                z.appendChild(b); zone.appendChild(z);
+                let ready = false;
+                let tm = setTimeout(() => { ready = true; z.classList.add('ready'); b.innerText = 'ЖМИ!'; b.style.color = '#39ff14'; }, Math.random()*1500+1200);
+                z.onclick = () => { if(ready) { z.onclick = null; onWin(); } else { clearTimeout(tm); b.innerText = 'Рано!'; setTimeout(startLvl, 800); }};
+            }
+            else if(mech === 1) {
+                let d = document.createElement('div'); d.className = 't-dot'; zone.appendChild(d);
+                let a = Math.random() * 360, speed = 0.04 + (Math.random() * 0.03);
+                function L() { if(curLvl === totalLvls && mech !== 7) return; if(!d.parentNode) return; a += speed; d.style.left = `${50 + Math.cos(a) * 35}%`; d.style.top = `${50 + Math.sin(a) * 35}%`; requestAnimationFrame(L); } L();
+                d.onclick = (e) => { e.stopPropagation(); d.remove(); onWin(); };
+            }
+            else if(mech === 2) {
+                let c = 0;
+                function S() {
+                    if (c >= 3 || !zone.parentNode) return;
+                    let d = document.createElement('div'); d.className = 'f-dot'; d.style.left = `${Math.random() * 70 + 15}%`; d.style.top = `${Math.random() * 70 + 15}%`;
+                    d.onclick = (e) => { e.stopPropagation(); d.remove(); c++; snd(400, 0.05); if(c >= 3) onWin(); else setTimeout(S, 200); };
+                    zone.appendChild(d); setTimeout(() => { if(d.parentNode) { d.remove(); setTimeout(S, 200); } }, 600);
+                } S();
+            }
+            else if(mech === 3) {
+                let r = document.createElement('div'); r.className = 't-ring';
+                let c = document.createElement('div'); c.className = 't-center';
+                zone.appendChild(r); zone.appendChild(c);
+                let s = 1.8, dir = -1;
+                function P() { if(!r.parentNode) return; s += 0.032 * dir; if(s <= 0.3) dir = 1; if(s >= 1.9) dir = -1; r.style.transform = `translate(-50%,-50%) scale(${s})`; requestAnimationFrame(P); } P();
+                zone.onclick = () => { if(s >= 0.35 && s <= 0.75) { zone.onclick = null; onWin(); } else { r.style.borderColor = '#ff007f'; setTimeout(() => r.style.borderColor = '#9d4edd', 300); }};
+            }
+            else if(mech === 4) {
+                let bar = document.createElement('div'); bar.style = "position:absolute; bottom:0; left:0; width:0%; height:100%; background:linear-gradient(0deg, rgba(255,0,127,0.2), rgba(0,210,255,0.4)); transition:width 0.1s linear;";
+                let txt = document.createElement('b'); txt.innerText = "ЗАЖМИ МЕНЯ"; txt.style = "position:relative; z-index:2; opacity:0.5;";
+                zone.appendChild(bar); zone.appendChild(txt);
+                let p = 0, h = false, it = null;
+                function U() { h = true; it = setInterval(() => { if(p < 100){ p += 4; bar.style.width = `${p}%`; }else{ clearInterval(it); zone.onmousedown = zone.ontouchstart = zone.onmouseup = zone.ontouchend = null; onWin(); }}, 30); }
+                function D() { h = false; clearInterval(it); it = setInterval(() => { if(p > 0 && !h){ p -= 6; bar.style.width = `${p}%`; }else clearInterval(it); }, 30); }
+                zone.onmousedown = zone.ontouchstart = (e) => { e.preventDefault(); U(); }; zone.onmouseup = zone.ontouchend = () => D();
+            }
+            else if(mech === 5) {
+                let row = document.createElement('div'); row.className = 'choice-row';
+                let winI = Math.floor(Math.random() * 3) + 1;
+                for(let i=1; i<=3; i++) {
+                    let card = document.createElement('div'); card.className = 'c-card'; card.innerText = '?';
+                    card.onclick = () => {
+                        if(i === winI) { card.classList.add('win'); card.innerText = '✔'; snd(523, 0.1); setTimeout(onWin, 400); }
+                        else { card.style.borderColor = '#ff007f'; card.innerText = '✘'; triggerVibe(); }
+                    }; row.appendChild(card);
+                } zone.appendChild(row);
+            }
+            else if(mech === 6) {
+                let cube = document.createElement('div'); cube.className = 'c-cube'; zone.appendChild(cube);
+                let tx = 50, ty = 50, cx = 50, cy = 50;
+                let iv = setInterval(() => { tx = Math.random() * 70 + 15; ty = Math.random() * 70 + 15; }, 380);
+                function anim() { if(!cube.parentNode) return; cx += (tx - cx) * 0.12; cy += (ty - cy) * 0.12; cube.style.left = `${cx}%`; cube.style.top = `${cy}%`; requestAnimationFrame(anim); } anim();
+                cube.onclick = (e) => { e.stopPropagation(); clearInterval(iv); cube.remove(); onWin(); };
+            }
+            else if(mech === 7) {
+                let line = document.createElement('div'); line.className = 'scan-line';
+                let finger = document.createElement('div'); finger.style = "width:74px; height:94px; border:2px dashed #00d2ff; border-radius:37px; display:flex; justify-content:center; align-items:center; color:#00d2ff; font-weight:bold; font-size:0.8rem; cursor:pointer; background:rgba(0,210,255,0.05); z-index:5;"; finger.innerText = "HOLD";
+                zone.appendChild(line); zone.appendChild(finger);
+                let p = 0, iv = null;
+                function startS() {
+                    line.style.display = 'block'; snd(200, 2);
+                    iv = setInterval(() => {
+                        if(p < 100) { p += 4; finger.innerText = `${p}%`; finger.style.background = `rgba(57,255,14,${p/200})`; }
+                        else { clearInterval(iv); line.style.display = 'none'; finger.style.display = 'none'; instEl.style.display = 'none'; onWin(); }
+                    }, 80);
+                }
+                function stopS() { clearInterval(iv); line.style.display = 'none'; p = 0; finger.innerText = 'HOLD'; finger.style.background = 'rgba(0,210,255,0.05)'; }
+                finger.onmousedown = finger.ontouchstart = (e) => { e.preventDefault(); startS(); }; finger.onmouseup = finger.ontouchend = () => stopS();
+            }
+        }
+        function onWin() {
+            triggerVibe(); snd(523, 0.15);
+            const compEl = document.getElementById('g-comp');
+            const nextBtn = document.getElementById('g-next');
+            compEl.innerText = comps[curLvl - 1];
+            compEl.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+        }
+
+        document.getElementById('g-next').onclick = () => {
+            snd(180, 0.2);
+            if(curLvl < totalLvls) {
+                curLvl++;
+                if(curLvl === 31) {
+                    document.getElementById('scr-game').classList.remove('active');
+                    document.getElementById('scr-err').classList.add('active');
+                    setTimeout(() => {
+                        document.getElementById('scr-err').classList.remove('active');
+                        document.getElementById('scr-game').classList.add('active');
+                        startLvl();
+                    }, 2800);
+                } else {
+                    startLvl();
+                }
+            } else {
+                document.getElementById('scr-game').classList.remove('active');
+                document.getElementById('scr-final').classList.add('active');
+            }
+        };
+
+        document.getElementById('start-btn').onclick = () => {
+            if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+            snd(261, 0.1);
+            document.getElementById('scr-start').classList.remove('active');
+            document.getElementById('scr-game').classList.add('active');
+            startLvl();
+        };
+
+        document.getElementById('f-yes').onclick = () => {
+            snd(600, 0.3);
+            alert('Урааа! Ты самая лучшая на свете! ❤️ Твоя улыбка творит настоящие чудеса!');
+        };
+
+        let no = document.getElementById('f-no');
+        no.onmouseover = no.ontouchstart = (e) => {
+            e.preventDefault();
+            no.style.transform = `translate(${Math.random()*140-70}px, ${Math.random()*100-50}px)`;
+            snd(150, 0.05);
+        };
+    </script>
+</body>
+</html>
